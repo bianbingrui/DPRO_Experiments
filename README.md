@@ -100,4 +100,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Contact
 
-For questions or feedback, please open an issue or contact [your-email@domain.com]. 
+For questions or feedback, please open an issue or contact [bbian@purdue.edu]. 
