@@ -85,7 +85,7 @@ If you use this code in your research, please cite:
 ```bibtex
 @article{dpro2024,
   title={Distributionally Robust Policy Optimization with Heterogeneous Risk Preferences},
-  author={Your Name},
+  author={Bingrui Bian, William B, Haskell},
   year={2024}
 }
 ```
