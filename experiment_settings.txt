@@ -1,0 +1,89 @@
+# Numerical Experiment Settings
+
+## 1. Space Dimensions
+- Outcome space |X| = 3 (X = {1,2,3})
+- Mental space |Ω| = 2 (two types of agents)
+- Material space |S| = 2 (two states)
+
+## 2. Basic AA Acts (d=5)
+Each act r_i must satisfy Σ_x r_i(x,s) = 1 for each state s
+
+r₁ (Very Safe):
+  State s=1: r₁(1,1)=0.3, r₁(2,1)=0.4, r₁(3,1)=0.3
+  State s=2: r₁(1,2)=0.3, r₁(2,2)=0.4, r₁(3,2)=0.3
+
+r₂ (Moderately Safe):
+  State s=1: r₂(1,1)=0.25, r₂(2,1)=0.5, r₂(3,1)=0.25
+  State s=2: r₂(1,2)=0.3, r₂(2,2)=0.4, r₂(3,2)=0.3
+
+r₃ (Balanced):
+  State s=1: r₃(1,1)=0.2, r₃(2,1)=0.6, r₃(3,1)=0.2
+  State s=2: r₃(1,2)=0.2, r₃(2,2)=0.6, r₃(3,2)=0.2
+
+r₄ (Moderately Risky):
+  State s=1: r₄(1,1)=0.2, r₄(2,1)=0.3, r₄(3,1)=0.5
+  State s=2: r₄(1,2)=0.5, r₄(2,2)=0.3, r₄(3,2)=0.2
+
+r₅ (Very Risky):
+  State s=1: r₅(1,1)=0.1, r₅(2,1)=0.2, r₅(3,1)=0.7
+  State s=2: r₅(1,2)=0.7, r₅(2,2)=0.2, r₅(3,2)=0.1
+
+## 3. Comparison AA Acts (|M|=3)
+Each act c_m must satisfy Σ_x c_m(x,s) = 1 for each state s
+
+c₁ (Conservative):
+  State s=1: c₁(1,1)=0.4, c₁(2,1)=0.4, c₁(3,1)=0.2
+  State s=2: c₁(1,2)=0.4, c₁(2,2)=0.4, c₁(3,2)=0.2
+
+c₂ (Moderate):
+  State s=1: c₂(1,1)=0.3, c₂(2,1)=0.4, c₂(3,1)=0.3
+  State s=2: c₂(1,2)=0.3, c₂(2,2)=0.4, c₂(3,2)=0.3
+
+c₃ (Aggressive):
+  State s=1: c₃(1,1)=0.2, c₃(2,1)=0.3, c₃(3,1)=0.5
+  State s=2: c₃(1,2)=0.5, c₃(2,2)=0.3, c₃(3,2)=0.2
+
+## 4. Risk Aversion Parameters
+- Fixed γ = 0.5 for welfare evaluation
+- γ_ω values randomly generated in (0,1) for each ω ∈ Ω
+- γ_MEU calculated as: Σ_ω φ̂(ω)γ_ω
+
+## 5. Utility Function
+u(x,ω) = (x^(1-γ_ω))/(1-γ_ω)
+u(z,ω,s) = Σ_x u(x,ω)r(z)(x,s)
+
+## 6. Experiment Parameters
+- True distribution: [0.6, 0.4]
+- Number of samples: 1 to 100
+- Number of trials per sample size: 5
+- Random seed: 42
+
+## 7. KL-divergence Parameter
+ε = 10.0  # Increased from 0.1 for better numerical stability
+
+## 8. Implementation Details
+1. Empirical Distribution Generation:
+   - Samples drawn from true distribution
+   - Empirical distribution computed using sample frequencies
+
+2. Welfare Calculation:
+   - Total welfare computed using true distribution
+   - Averaged across trials for each sample size
+
+3. Visualization:
+   - Blue points: DPRO welfare values
+   - Red points: MEU welfare values
+   - Dashed trend lines for both approaches
+   - Results saved as high-resolution (300 DPI) PNG file
+
+## 9. Constraints
+1. For any AA act f (basic or comparison):
+   - Σ_x f(x,s) = 1 for each s ∈ S
+2. For optimal solution z:
+   - Σ_i z_i = 1
+   - z_i ≥ 0 for all i
+
+## 10. Evaluation Metrics
+1. Total social welfare comparison between DPRO and MEU
+2. Performance stability across different sample sizes
+3. Trend analysis using linear fit 
