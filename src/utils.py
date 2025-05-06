@@ -21,14 +21,7 @@ def calculate_utility(x: float, gamma: float) -> float:
     
     # Base utility with proper scaling
     base_utility = (x_scaled ** (1 - gamma)) / (1 - gamma)
-    
-    # Scale down the base utility to prevent extreme values
-    scaled_utility = 0.01 * base_utility  # More aggressive scaling
-    
-    # Add small non-linear term for variation
-    variation_term = 0.001 * np.sin(x_scaled * np.pi) * gamma
-    
-    return scaled_utility + variation_term
+    return base_utility 
 
 def generate_risk_parameters(n_agents: int, seed: int = None) -> np.ndarray:
     """Generate random risk aversion parameters.
@@ -105,3 +98,29 @@ def verify_distribution_constraints(act_matrix: np.ndarray) -> bool:
     return np.allclose(np.sum(act_matrix, axis=0), 1.0) and \
            np.all(act_matrix >= 0) and \
            np.all(act_matrix <= 1) 
+
+def compute_c_omega_m(gamma_omega, comparison_acts_matrix):
+    """
+    Compute the reference utility c_omega_m for each mental state and comparison act.
+
+    Args:
+        gamma_omega: Array of risk aversion parameters for each mental state (n_omega,)
+        comparison_acts_matrix: List of comparison act matrices (each of shape (n_x, n_s))
+
+    Returns:
+        c_omega_m: 2D numpy array of shape (n_omega, m), where each entry is the mean utility
+                   of comparison act m under mental state omega (averaged over all material states)
+    """
+    n_omega = len(gamma_omega)
+    m = len(comparison_acts_matrix)
+    c_omega_m = np.zeros((n_omega, m))
+    for omega in range(n_omega):
+        for m_idx, act in enumerate(comparison_acts_matrix):
+            # Compute the mean utility of act m under mental state omega
+            utilities = []
+            for s in range(act.shape[1]):
+                outcome_probs = act[:, s]
+                util = np.sum([calculate_utility(x+1, gamma_omega[omega]) * outcome_probs[x] for x in range(act.shape[0])])
+                utilities.append(util)
+            c_omega_m[omega, m_idx] = np.max(utilities)
+    return c_omega_m

@@ -1,4 +1,5 @@
 """Configuration package for DPRO experiments."""
-from .config_loader import ExperimentConfig, ConfigType, get_config_from_args
+# Cleaned up for minimal config package. No imports from config_loader.
+# (If you need to expose anything from large_config, you can import it here.)
 
-__all__ = ['ExperimentConfig', 'ConfigType', 'get_config_from_args'] 
+# ... existing code ... 
