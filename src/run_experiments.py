@@ -24,7 +24,7 @@ from src.utils import (
     convert_act_to_matrix,
     compute_c_omega_m
 )
-from src.optimization import solve_dpro, solve_meu, solve_nr
+from src.optimization_funcs import solve_dpro, solve_meu, solve_nr
 
 console = Console()
 
@@ -38,7 +38,7 @@ def display_optimal_solution(dpro_z: np.ndarray, meu_z: np.ndarray, nr_z: np.nda
         nr_z: Non-robust solution weights
         dpro_value: DPRO optimal value
         meu_value: MEU optimal value
-        nr_value: NR optimal value
+        nr_value: SEU optimal value
     """
     # Create main comparison table
     table = Table(title="[bold]Optimal Solution Comparison[/bold]")
@@ -81,7 +81,7 @@ def display_optimal_solution(dpro_z: np.ndarray, meu_z: np.ndarray, nr_z: np.nda
             f"{percentage:.2f}%"
         )
     
-    # Add rows to NR table
+    # Add rows to SEU table
     for i, weight in enumerate(nr_z):
         percentage = weight * 100
         nr_table.add_row(
@@ -100,7 +100,7 @@ def display_optimal_solution(dpro_z: np.ndarray, meu_z: np.ndarray, nr_z: np.nda
         f"{meu_value:.6f}",
     )
     table.add_row(
-        "NR",
+        "SEU",
         f"{nr_value:.6f}",
     )
     
@@ -135,7 +135,7 @@ def display_optimal_solution(dpro_z: np.ndarray, meu_z: np.ndarray, nr_z: np.nda
         bar = "█" * bar_width
         console.print(f"r_{i+1:<2}: {bar} {weight:.4f}")
     
-    console.print("\n[green]NR Weights:[/green]")
+    console.print("\n[green]SEU Weights:[/green]")
     for i, weight in enumerate(nr_z):
         bar_width = int(weight * max_bar_width)
         bar = "█" * bar_width
@@ -195,7 +195,7 @@ def save_out_of_sample_plot(realization_results: Dict[str, np.ndarray], params: 
     ax.scatter(evaluation_indices, realization_results['meu_values'],
               marker='^', color='red', s=50, alpha=0.2, label='MEU samples')
     ax.scatter(evaluation_indices, realization_results['nr_values'],
-              marker='o', color='green', s=50, alpha=0.2, label='NR samples')
+              marker='o', color='green', s=50, alpha=0.2, label='SEU samples')
     
     # Plot mean lines
     ax.axhline(y=dpro_mean, color='blue', linestyle='-', alpha=0.8, 
@@ -203,7 +203,7 @@ def save_out_of_sample_plot(realization_results: Dict[str, np.ndarray], params: 
     ax.axhline(y=meu_mean, color='red', linestyle='-', alpha=0.8,
                label=f'MEU mean: {meu_mean:.4f} ± {meu_ci:.4f}')
     ax.axhline(y=nr_mean, color='green', linestyle='-', alpha=0.8,
-               label=f'NR mean: {nr_mean:.4f} ± {nr_ci:.4f}')
+               label=f'SEU mean: {nr_mean:.4f} ± {nr_ci:.4f}')
     
     # Add confidence intervals as shaded regions
     ax.fill_between(evaluation_indices, 
@@ -236,12 +236,12 @@ def save_out_of_sample_plot(realization_results: Dict[str, np.ndarray], params: 
     )
     stats_text += f'DPRO vs MEU: p={p_val_dpro_meu:.4e}\n'
     
-    # T-test between DPRO and NR
+    # T-test between DPRO and SEU
     t_stat_dpro_nr, p_val_dpro_nr = stats.ttest_ind(
         realization_results['dpro_values'],
         realization_results['nr_values']
     )
-    stats_text += f'DPRO vs NR: p={p_val_dpro_nr:.4e}\n'
+    stats_text += f'DPRO vs SEU: p={p_val_dpro_nr:.4e}\n'
     
     # Add performance improvement percentages
     dpro_vs_meu = ((dpro_mean - meu_mean) / abs(meu_mean)) * 100
@@ -249,7 +249,7 @@ def save_out_of_sample_plot(realization_results: Dict[str, np.ndarray], params: 
     
     stats_text += f'\nPerformance Improvement:\n'
     stats_text += f'DPRO vs MEU: {dpro_vs_meu:+.2f}%\n'
-    stats_text += f'DPRO vs NR: {dpro_vs_nr:+.2f}%'
+    stats_text += f'DPRO vs SEU: {dpro_vs_nr:+.2f}%'
     
     # Add stats text to plot
     ax.text(1.05, 0.5, stats_text,
@@ -339,7 +339,7 @@ def plot_results(results: Dict[str, np.ndarray], realization_results: Dict[str, 
     ax.scatter(evaluation_indices, realization_results['nr_values'], marker='o', color='green', s=50, alpha=0.2)
     ax.axhline(y=dpro_mean, color='blue', linestyle='-', alpha=0.8, label=f'DPRO: {dpro_mean:.4f} ± {dpro_ci:.4f}')
     ax.axhline(y=meu_mean, color='red', linestyle='-', alpha=0.8, label=f'MEU: {meu_mean:.4f} ± {meu_ci:.4f}')
-    ax.axhline(y=nr_mean, color='green', linestyle='-', alpha=0.8, label=f'NR: {nr_mean:.4f} ± {nr_ci:.4f}')
+    ax.axhline(y=nr_mean, color='green', linestyle='-', alpha=0.8, label=f'SEU: {nr_mean:.4f} ± {nr_ci:.4f}')
     ax.fill_between(evaluation_indices, dpro_mean - dpro_ci, dpro_mean + dpro_ci, color='blue', alpha=0.2)
     ax.fill_between(evaluation_indices, meu_mean - meu_ci, meu_mean + meu_ci, color='red', alpha=0.2)
     ax.fill_between(evaluation_indices, nr_mean - nr_ci, nr_mean + nr_ci, color='green', alpha=0.2)
@@ -353,7 +353,7 @@ def plot_results(results: Dict[str, np.ndarray], realization_results: Dict[str, 
     dpro_meu_diff = realization_results['dpro_values'] - realization_results['meu_values']
     dpro_nr_diff = realization_results['dpro_values'] - realization_results['nr_values']
     sns.histplot(data=dpro_meu_diff, color='red', alpha=0.5, label='DPRO-MEU', kde=True, ax=ax)
-    sns.histplot(data=dpro_nr_diff, color='green', alpha=0.5, label='DPRO-NR', kde=True, ax=ax)
+    sns.histplot(data=dpro_nr_diff, color='green', alpha=0.5, label='DPRO-SEU', kde=True, ax=ax)
     ax.axvline(x=0, color='black', linestyle='--', alpha=0.6)
     diff_mean_dpro_meu = np.mean(dpro_meu_diff)
     diff_mean_dpro_nr = np.mean(dpro_nr_diff)
@@ -361,12 +361,12 @@ def plot_results(results: Dict[str, np.ndarray], realization_results: Dict[str, 
     diff_ci_dpro_nr = z_score * np.std(dpro_nr_diff) / np.sqrt(n)
     stats_text = f'Mean Differences (95% CI):\n'
     stats_text += f'DPRO-MEU: {diff_mean_dpro_meu:.4f} ± {diff_ci_dpro_meu:.4f}\n'
-    stats_text += f'DPRO-NR: {diff_mean_dpro_nr:.4f} ± {diff_ci_dpro_nr:.4f}\n'
+    stats_text += f'DPRO-SEU: {diff_mean_dpro_nr:.4f} ± {diff_ci_dpro_nr:.4f}\n'
     t_stat_meu, p_val_meu = stats.ttest_ind(realization_results['dpro_values'], realization_results['meu_values'])
     t_stat_nr, p_val_nr = stats.ttest_ind(realization_results['dpro_values'], realization_results['nr_values'])
     stats_text += f'\np-values:\n'
     stats_text += f'DPRO vs MEU: {p_val_meu:.4e}\n'
-    stats_text += f'DPRO vs NR: {p_val_nr:.4e}'
+    stats_text += f'DPRO vs SEU: {p_val_nr:.4e}'
     ax.text(0.95, 0.95, stats_text, transform=ax.transAxes, verticalalignment='top', horizontalalignment='right', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
     ax.set_xlabel('Performance Difference')
     ax.set_ylabel('Frequency')
@@ -394,8 +394,7 @@ def solve_stage(n_mental_realization, n_material_realization, epsilon, seed=42):
     psi_hat = sample_distribution(TRUE_DISTRIBUTION_MATERIAL, n_material_realization)
     # 2. Prepare risk parameters
     gamma_omega = np.array(list(RISK_PROFILES.values()))
-    gamma_meu = 0.5
-    #gamma_meu = calculate_meu_gamma(gamma_omega, phi_hat)
+    gamma_meu = calculate_meu_gamma(gamma_omega, phi_hat)
     acts_matrix = [convert_act_to_matrix(act, X_SPACE_SIZE, S_SPACE_SIZE) for act in BASIC_AA_ACTS.values()]
     comparison_acts_matrix = [convert_act_to_matrix(act, X_SPACE_SIZE, S_SPACE_SIZE) for act in COMPARISON_AA_ACTS.values()]
     # 3. Solve for optimal solutions
@@ -463,15 +462,15 @@ def plot_trials_with_cummean_and_ci(results, opt_solutions, params):
     # Plot all points
     ax.scatter(x, results['dpro_values'], color='blue', alpha=0.3, label='DPRO')
     ax.scatter(x, results['meu_values'], color='red', alpha=0.3, label='MEU')
-    ax.scatter(x, results['nr_values'], color='green', alpha=0.3, label='NR')
+    ax.scatter(x, results['nr_values'], color='green', alpha=0.3, label='SEU')
     
     # Plot polylines connecting each trial's result for each method
     ax.plot(x, results['dpro_values'], color='blue', alpha=0.5, linestyle='--', linewidth=1, label='DPRO Polyline')
     ax.plot(x, results['meu_values'], color='red', alpha=0.5, linestyle='dashdot', linewidth=1, label='MEU Polyline')
-    ax.plot(x, results['nr_values'], color='green', alpha=0.5, linestyle='-.', linewidth=1, label='NR Polyline')
+    ax.plot(x, results['nr_values'], color='green', alpha=0.5, linestyle='-.', linewidth=1, label='SEU Polyline')
     
     # Cumulative mean and CI
-    for key, color, label in [('dpro_values','blue','DPRO'),('meu_values','red','MEU'),('nr_values','green','NR')]:
+    for key, color, label in [('dpro_values','blue','DPRO'),('meu_values','red','MEU'),('nr_values','green','SEU')]:
         vals = results[key]
         cummean = np.cumsum(vals) / (np.arange(n_trial)+1)
         # 95% CI for mean at each point
@@ -492,7 +491,7 @@ def plot_trials_with_cummean_and_ci(results, opt_solutions, params):
     console.print(f"[green]Saved out-of-sample trial plot to: {os.path.join(plot_dir, filename)}[/green]")
 
 def main():
-    console.print("[bold blue]Starting DPRO/MEU/NR Experiment (Refactored)[/bold blue]")
+    console.print("[bold blue]Starting DPRO/MEU/SEU Experiment (Refactored)[/bold blue]")
     ensure_plot_directory("out_of_sample")
     # Example parameter grid
     n_mental_list = [5, 50, 100]

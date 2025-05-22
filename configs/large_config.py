@@ -2,7 +2,7 @@
 import numpy as np
 # Space dimensions
 X_SPACE_SIZE = 5
-OMEGA_SPACE_SIZE = 4
+OMEGA_SPACE_SIZE = 5
 S_SPACE_SIZE = 4
 
 # Number of acts
@@ -91,15 +91,16 @@ COMPARISON_AA_ACTS = {
 
 # Risk profiles for mental states
 RISK_PROFILES = {
-    "VERY_RISK_AVERSE": 0.8,     # ω₁: Very risk-averse agent
-    "RISK_AVERSE": 0.6,          # ω₂: Moderately risk-averse agent
-    "RISK_SEEKING": 0.4,         # ω₃: Moderately risk-seeking agent
-    "VERY_RISK_SEEKING": 0.2     # ω₄: Very risk-seeking agent
+    "Extremely Risk-Averse": 0.99,     # ω₁: Very risk-averse agent
+    "VERY_RISK_AVERSE": 0.67,     # ω₁: Very risk-averse agent
+    "RISK_AVERSE": 0.35,          # ω₂: Moderately risk-averse agent
+    "RISK_SEEKING": 0.2,         # ω₃: Moderately risk-seeking agent
+    "VERY_RISK_SEEKING": 0.05,     # ω₄: Very risk-seeking agent
 }
 
 # Experiment parameters
-TRUE_DISTRIBUTION_MENTAL = np.array([0.4, 0.1, 0.15, 0.35])  # More balanced distribution for 4 states
-TRUE_DISTRIBUTION_MATERIAL = np.array([0.3, 0.4, 0.2, 0.1])
+TRUE_DISTRIBUTION_MENTAL = np.array([0.6, 0.2, 0.1, 0.05, 0.05])  # More balanced distribution for 4 states
+TRUE_DISTRIBUTION_MATERIAL = np.array([0.13, 0.7, 0.16, 0.01])
 MAX_SAMPLES = 100
 NUM_TRIALS = 5
 RANDOM_SEED = 42

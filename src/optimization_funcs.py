@@ -93,28 +93,33 @@ def solve_dpro(phi_hat: np.ndarray, psi_hat: np.ndarray, gamma_omega: np.ndarray
     constraints.append(z >= 0)
     
     # Bounds on variables for numerical stability
-    # constraints.append(beta <= 1)
-    # constraints.append(beta >= -1)
-    # # constraints.append(beta <= 1)
-    # constraints.append(gamma >= 0)
-    # constraints.append(gamma <= 1)
+    constraints.append(beta <= 1)
+    constraints.append(beta >= -1)
+    constraints.append(gamma >= 0)
+    constraints.append(gamma <= 1)
     
     # Dual exponential cone constraints for each omega
     for omega in range(n_omega):
         for s in range(n_s):
             # Scale lambda variables for numerical stability
-            constraints.append(cp.ExpCone(lambda2[omega, s], 
-                                        lambda1[omega, s], 
-                                    lambda3[omega, s]))
+            constraints.append(
+                cp.ExpCone(
+                    -lambda1[omega, s],
+                    lambda2[omega, s],
+                    lambda3[omega, s]
+                )
+            )
+            constraints.append(lambda1[omega, s] <= 0)
+            constraints.append(lambda2[omega, s] >= 0)
             constraints.append(lambda3[omega, s] + gamma == 0)
         
             # Bounds on dual variables
-            # constraints.append(lambda1[omega, s] >= -1)
-            # constraints.append(lambda1[omega, s] <= 1)
-            # constraints.append(lambda2[omega, s] >= -1)
-            # constraints.append(lambda2[omega, s] <= 1)
-            # constraints.append(lambda3[omega, s] >= -1)
-            # constraints.append(lambda3[omega, s] <= 1)
+            constraints.append(lambda1[omega, s] >= -1)
+            constraints.append(lambda1[omega, s] <= 1)
+            constraints.append(lambda2[omega, s] >= -1)
+            constraints.append(lambda2[omega, s] <= 1)
+            constraints.append(lambda3[omega, s] >= -1)
+            constraints.append(lambda3[omega, s] <= 1)
 
     utilities_constraints_value = np.zeros((m,n_omega,n_s))
     # Alpha-beta constraints for each state
@@ -208,30 +213,27 @@ def solve_meu(phi_hat: np.ndarray, psi_hat: np.ndarray, gamma_meu: float,
         z >= 0,
         gamma >= 0
     ]
-    # constraints.append(beta <= 1)
-    # constraints.append(beta >= -1)
+    constraints.append(beta <= 1)
+    constraints.append(beta >= -1)
+    constraints.append(gamma >= 0)
+    constraints.append(gamma <= 1)
 
     for s in range(n_s):
         constraints.append(expr[s] + beta - lambda2[s] <= 0)
-        constraints.append(lambda1[s] + gamma == 0)
-        # constraints.append(lambda1[s] >= -1)
-        # constraints.append(lambda1[s] <= 1)
-        # constraints.append(lambda2[s] >= -1)
-        # constraints.append(lambda2[s] <= 1)
-        # constraints.append(lambda3[s] >= -1)
-        # constraints.append(lambda3[s] <= 1)
+        constraints.append(lambda3[s] + gamma == 0)
+        constraints.append(lambda1[s] >= -1)
+        constraints.append(lambda1[s] <= 1)
+        constraints.append(lambda2[s] >= -1)
+        constraints.append(lambda2[s] <= 1)
+        constraints.append(lambda3[s] >= -1)
+        constraints.append(lambda3[s] <= 1)
     
     # Dual exponential cone constraints for each omega
-    # for s in range(n_s):
-    #     # Scale lambda variables for numerical stability
-    #     constraints.append(cp.ExpCone(-0.1 * lambda2[s], 
-    #                                 -0.1 * lambda1[s], 
-    #                                 0.1 * lambda3[s]))
     for s in range(n_s):
-    # Scale lambda variables for numerical stability
-        constraints.append(cp.ExpCone( lambda2[s], 
-                                lambda1[s], 
-                            lambda3[s]))
+        # Scale lambda variables for numerical stability
+        constraints.append(cp.ExpCone(-lambda1[s], 
+                                    lambda2[s], 
+                                lambda3[s]))
 
     # Define and solve the problem
     prob = cp.Problem(cp.Maximize(objective), constraints)
@@ -258,7 +260,7 @@ def solve_meu(phi_hat: np.ndarray, psi_hat: np.ndarray, gamma_meu: float,
     
     raise ValueError("No solver could solve the MEU problem. Try adjusting the problem parameters.")
 
-def solve_nr(phi_hat: np.ndarray, psi_hat: np.ndarray, gamma_omega: np.ndarray, acts: List[np.ndarray]) -> Tuple[np.ndarray, float]:
+def solve_nr(phi_hat: np.ndarray, psi_hat: np.ndarray, gamma_meu: float, acts: List[np.ndarray]) -> Tuple[np.ndarray, float]:
     """Solve the non-robust optimization problem.
     
     This solves the simple expected utility maximization:
@@ -269,7 +271,7 @@ def solve_nr(phi_hat: np.ndarray, psi_hat: np.ndarray, gamma_omega: np.ndarray, 
     Args:
         phi_hat: Empirical distribution over mental states (|Ω|,)
         psi_hat: Empirical distribution over material states (|S|,)
-        gamma: Risk aversion parameters for each mental state (|Ω|,)
+        gamma_meu: MEU risk aversion parameter
         acts: List of act matrices, each of shape (|X|, |S|)
     
     Returns:
@@ -286,28 +288,25 @@ def solve_nr(phi_hat: np.ndarray, psi_hat: np.ndarray, gamma_omega: np.ndarray, 
     z = cp.Variable(n_acts)
     
     # Calculate utilities
-    utilities = np.zeros((n_acts, n_omega, n_s))
+    utilities = np.zeros((n_acts, n_s))
     for i in range(n_acts):
-        for omega in range(n_omega):
-            for s in range(n_s):
-                # acts[i] has shape (X_SPACE_SIZE, S_SPACE_SIZE)
-                # calculate_utility returns shape (X_SPACE_SIZE,)
-                # This computes the expected utility for act i, mental state omega, and material state s
-                utilities[i, omega, s] = np.sum(
-                    acts[i][:, s] * calculate_utility(np.arange(1, X_SPACE_SIZE + 1), gamma_omega[omega])
-                )
+        for s in range(n_s):
+            # acts[i] has shape (X_SPACE_SIZE, S_SPACE_SIZE)
+            # calculate_utility returns shape (X_SPACE_SIZE,)
+            # This computes the expected utility for act i, mental state omega, and material state s
+            utilities[i, s] = np.sum(
+                acts[i][:, s] * calculate_utility(np.arange(1, X_SPACE_SIZE + 1), gamma_meu)
+            )
 
     # Calculate expected utilities for each (omega, s) pair
     expr = []
-    for omega in range(n_omega):
-        for s in range(n_s):
-            expr.append(cp.sum(cp.multiply(z, utilities[:, omega, s])))
+    for s in range(n_s):
+        expr.append(cp.sum(cp.multiply(z, utilities[:, s])))
     
     # Objective: maximize expected utility
     total_expected_utility = 0
-    for omega in range(n_omega):
-        for s in range(n_s):
-            total_expected_utility += vartheta_hat[omega, s] * expr[omega * n_s + s]
+    for s in range(n_s):
+        total_expected_utility += psi_hat[s] * expr[s]
     objective = cp.Maximize(total_expected_utility)
     
     # Constraints
@@ -348,6 +347,7 @@ def solve_nr(phi_hat: np.ndarray, psi_hat: np.ndarray, gamma_omega: np.ndarray, 
     # Ensure solution is normalized and feasible
     z_nr = np.clip(z_nr, 0, None)  # Ensure non-negativity
     z_nr = z_nr / np.sum(z_nr)     # Ensure normalization
+    
     
     return z_nr, optimal_value
 

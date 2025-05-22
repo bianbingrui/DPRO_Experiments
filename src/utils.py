@@ -14,13 +14,15 @@ def calculate_utility(x: float, gamma: float) -> float:
         Utility value
     """
     # Scale down x to prevent extreme values
-    x_scaled = x / X_SPACE_SIZE
+    #x_scaled = x / X_SPACE_SIZE
     
-    if gamma == 1:
-        return 0.1 * np.log(x_scaled)  # Scale log utility
+    # if gamma == 1:
+    #     return 0.1 * np.log(x_scaled)  # Scale log utility
     
-    # Base utility with proper scaling
-    base_utility = (x_scaled ** (1 - gamma)) / (1 - gamma)
+    # # Base utility with proper scaling
+    #base_utility = (x_scaled ** (1 - gamma)) / (1 - gamma)
+    #base_utility = 1 - np.exp(-gamma * x)
+    base_utility = 1 - np.exp(-gamma * x) 
     return base_utility 
 
 def generate_risk_parameters(n_agents: int, seed: int = None) -> np.ndarray:
@@ -122,5 +124,5 @@ def compute_c_omega_m(gamma_omega, comparison_acts_matrix):
                 outcome_probs = act[:, s]
                 util = np.sum([calculate_utility(x+1, gamma_omega[omega]) * outcome_probs[x] for x in range(act.shape[0])])
                 utilities.append(util)
-            c_omega_m[omega, m_idx] = np.max(utilities)
+            c_omega_m[omega, m_idx] = np.min(utilities)
     return c_omega_m
