@@ -24,13 +24,10 @@ DPRO_Experiments/
 │   └── utils.py             # Utility functions and helpers
 ├── configs/
 │   └── large_config.py      # Configuration parameters
-├── out_of_smaple_v2/        # Experimental results and plots
-├── plots/                   # Additional visualization outputs
-├── Plots_for_paper/         # Paper-related figures
-├── Plots_for_paper2/        # Additional paper figures
+├── out_of_smaple_plots/        # Experimental results and plots
+├── Plots_paper_shown/        # Additional paper figures
 ├── experiment_settings.txt  # Detailed experiment configuration
 ├── requirements.txt         # Python dependencies
-└── main.tex               # LaTeX paper draft
 ```
 
 ## 🚀 **Quick Start**
@@ -111,7 +108,7 @@ The experiments compare three approaches:
 2. **MEU**: Maximum expected utility
 3. **NR**: Non-robust (baseline)
 
-Results are automatically saved in the `out_of_smaple_v2/` directory with comprehensive visualizations.
+Results are automatically saved in the `out_of_smaple_plots/` directory with comprehensive visualizations.
 
 ## 📋 **Dependencies**
 
@@ -120,18 +117,6 @@ Results are automatically saved in the `out_of_smaple_v2/` directory with compre
 - **Progress**: rich
 - **Documentation**: pandas
 
-## 📚 **Citation**
-
-If you use this code in your research, please cite:
-
-```bibtex
-@article{yourname2024dpro,
-  title={Distributionally Robust Preference Optimization with Mental States},
-  author={Your Name},
-  journal={Working Paper},
-  year={2024}
-}
-```
 
 ## 🤝 **Contributing**
 
@@ -143,7 +128,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 **Contact**
 
-For questions or collaboration, please contact: [your.email@university.edu]
+For questions or collaboration, please contact: [bbian@purdue.edu]
 
 ## 🙏 **Acknowledgments**
 
