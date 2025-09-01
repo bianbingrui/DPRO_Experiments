@@ -1,103 +1,154 @@
-# Distributionally Robust Policy Optimization (DPRO)
+# DPRO Optimization: Distributionally Robust Preference Optimization
 
-This repository contains the implementation and experimental analysis of Distributionally Robust Policy Optimization (DPRO), a novel approach to decision-making under uncertainty that combines robust optimization with behavioral economics insights.
+This repository contains the numerical experiments and implementation for the paper "Distributionally Robust Preference Optimization with Mental States" (working title).
 
-## Overview
+## 📖 **Paper Abstract**
 
-DPRO is designed to make optimal decisions while accounting for:
-- Uncertainty in probability distributions
-- Heterogeneous risk preferences
-- Limited sample availability
-- Out-of-sample performance guarantees
+This work introduces a novel approach to distributionally robust optimization that accounts for both material uncertainty and mental state ambiguity. We propose the Distributionally Robust Preference Optimization (DPRO) model, which extends traditional robust optimization by incorporating mental states that influence risk preferences without affecting objective probabilities.
 
-The implementation compares DPRO against traditional approaches:
-- Maximum Expected Utility (MEU)
-- Non-robust optimization (NR)
+## 🎯 **Key Features**
 
-## Project Structure
+- **DPRO Model**: Distributionally robust optimization with mental state ambiguity
+- **MEU Comparison**: Comparison with Maximum Expected Utility approach
+- **Random Acts Generation**: Stochastic generation of AA acts for enhanced experimental diversity
+- **Comprehensive Analysis**: Welfare comparison across different parameter settings
+- **Reproducible Results**: Complete experimental setup with configurable parameters
+
+## 🏗️ **Repository Structure**
 
 ```
-.
-├── configs/
-│   └── large_config.py    # Configuration parameters and constants
+DPRO_Experiments/
+├── run_trials.py              # Main experiment runner (random acts generation)
 ├── src/
-│   ├── optimization.py    # DPRO, MEU, and NR optimization implementations
-│   ├── utils.py          # Utility functions and helpers
-│   ├── experiment.py     # Experiment class definition
-│   └── run_experiments.py # Main experiment runner
-├── plots/                # Generated experiment plots
-└── results/             # Experimental results data
+│   ├── optimization_funcs.py # Core optimization solvers (DPRO, MEU, NR)
+│   └── utils.py             # Utility functions and helpers
+├── configs/
+│   └── large_config.py      # Configuration parameters
+├── out_of_smaple_v2/        # Experimental results and plots
+├── plots/                   # Additional visualization outputs
+├── Plots_for_paper/         # Paper-related figures
+├── Plots_for_paper2/        # Additional paper figures
+├── experiment_settings.txt  # Detailed experiment configuration
+├── requirements.txt         # Python dependencies
+└── main.tex               # LaTeX paper draft
 ```
 
-## Requirements
+## 🚀 **Quick Start**
 
-- Python 3.8+
-- NumPy
-- CVXPY
-- Matplotlib
-- Seaborn
-- Rich (for console output)
+### **Installation**
 
-Install dependencies:
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/DPRO_Experiments.git
+cd DPRO_Experiments
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Usage
+### **Running Experiments**
 
-1. Run experiments:
+Run the main numerical experiments:
 ```bash
-PYTHONPATH=$PYTHONPATH:. python src/run_experiments.py
+python run_trials.py
 ```
 
-2. The script will:
-   - Run risk aversion experiments
-   - Generate empirical distributions
-   - Compare DPRO, MEU, and NR solutions
-   - Create visualization plots
-   - Save results in the `plots/` directory
+This will execute a comprehensive parameter grid experiment:
+- **Trials**: 10, 50, 100
+- **Mental states**: 5, 10, 50 samples
+- **Material states**: 5, 10, 50 samples
+- **Epsilon values**: 0.01, 0.1, 1.0
 
-## Experiment Parameters
+### **Custom Experiments**
 
-Key parameters that can be modified in `configs/large_config.py`:
-- `EPSILON`: Robustness parameter
-- `MAX_SAMPLES`: Maximum number of samples for empirical distribution
-- `NUM_TRIALS`: Number of experiment trials
-- `RISK_PROFILES`: Risk aversion parameters for different mental states
+For custom experiments, you can import and use the functions directly:
 
-## Results
+```python
+from run_trials import run_experiments, plot_results
 
-The experiments generate several plots:
-1. Risk aversion vs solution weights
-2. DPRO vs MEU optimal values
-3. Average weight distribution
-4. Risk aversion distribution by mental state
-5. Out-of-sample performance comparison
-6. Performance difference distribution
+# Run custom experiment
+results = run_experiments(
+    n_trials=100,
+    n_mental_realization=20,
+    n_material_realization=30,
+    epsilon=0.1,
+    seed=42
+)
 
-Results are saved in two directories:
-- `plots/full_results/`: Complete analysis plots
-- `plots/out_of_sample/`: Out-of-sample performance comparisons
+# Generate plots
+plot_results(results, params, save_path="custom_experiment.png")
+```
 
-## Citation
+## 🔬 **Methodology**
+
+### **DPRO Model**
+The Distributionally Robust Preference Optimization model solves:
+
+$$\min_{z \in \Delta} \max_{(\phi,\psi) \in \mathcal{C}} \mathbb{E}_{(\phi,\psi)}[u(z,\omega,s)]$$
+
+where:
+- $z$ are policy weights
+- $(\phi,\psi)$ are distributions over mental and material states
+- $\mathcal{C}$ is the ambiguity set
+- $u(z,\omega,s)$ is the utility function
+
+### **Mental States**
+- Mental states influence risk preferences without affecting objective probabilities
+- Each mental state has a unique risk aversion parameter $\gamma_\omega$
+- Utility function: $u(x,\omega) = \frac{x^{1-\gamma_\omega}}{1-\gamma_\omega}$
+
+### **AA Acts**
+- Acts are represented as probability matrices $r_i(x,s)$
+- Each act satisfies $\sum_x r_i(x,s) = 1$ for all states $s$
+- Random generation ensures experimental diversity
+
+## 📊 **Results**
+
+The experiments compare three approaches:
+1. **DPRO**: Distributionally robust optimization
+2. **MEU**: Maximum expected utility
+3. **NR**: Non-robust (baseline)
+
+Results are automatically saved in the `out_of_smaple_v2/` directory with comprehensive visualizations.
+
+## 📋 **Dependencies**
+
+- **Core**: numpy, scipy, matplotlib, seaborn
+- **Optimization**: cvxpy, clarabel, scs, ecos
+- **Progress**: rich
+- **Documentation**: pandas
+
+## 📚 **Citation**
 
 If you use this code in your research, please cite:
+
 ```bibtex
-@article{dpro2024,
-  title={Distributionally Robust Policy Optimization with Heterogeneous Risk Preferences},
-  author={Bingrui Bian, William B, Haskell},
+@article{yourname2024dpro,
+  title={Distributionally Robust Preference Optimization with Mental States},
+  author={Your Name},
+  journal={Working Paper},
   year={2024}
 }
 ```
 
-## License
+## 🤝 **Contributing**
+
+Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
+
+## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contributing
+## 📧 **Contact**
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+For questions or collaboration, please contact: [your.email@university.edu]
 
-## Contact
+## 🙏 **Acknowledgments**
 
-For questions or feedback, please open an issue or contact [bbian@purdue.edu]. 
+We thank the research community for valuable feedback and discussions on this work.
+
+---
+
+**Note**: This is a working paper. Results and methodology may be updated as the research progresses. 

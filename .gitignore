@@ -19,31 +19,71 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# IDE
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+dpro_experiments/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
 .idea/
+
+# VS Code
 .vscode/
-*.swp
-*.swo
 
-# OS
+# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+.AppleDouble
+.LSOverride
 
-# Project specific
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Results and plots (keep only source code)
+out_of_smaple/
+out_of_smaple_v2/
+out_of_smaple_plots/
+Plots_for_paper/
+Plots_for_paper2/
 plots/
-results/
-.pytest_cache/
-*.log
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# LaTeX
 *.aux
-*.bbl
-*.blg
+*.log
+*.out
+*.toc
 *.fdb_latexmk
 *.fls
-*.out
-*.synctex.gz 
+*.synctex.gz
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Logs
+*.log
+
+# Data files
+*.csv
+*.xlsx
+*.pkl
+*.h5
+
+# Build artifacts
+build/
+dist/
+*.egg-info/ 

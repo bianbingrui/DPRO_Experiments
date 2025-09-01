@@ -12,7 +12,7 @@ import os
 
 from configs.large_config import (
     X_SPACE_SIZE, OMEGA_SPACE_SIZE, S_SPACE_SIZE,
-    NUM_BASIC_ACTS, BASIC_AA_ACTS, COMPARISON_AA_ACTS,
+    NUM_BASIC_ACTS, COMPARISON_AA_ACTS,
     RISK_PROFILES, TRUE_DISTRIBUTION_MENTAL, TRUE_DISTRIBUTION_MATERIAL
 )
 from src.utils import (
@@ -24,6 +24,34 @@ from src.utils import (
 from src.optimization_funcs import solve_dpro, solve_meu, solve_nr
 
 console = Console()
+
+def generate_random_act_matrix(n_x: int, n_s: int) -> np.ndarray:
+    """Generate a random act matrix that satisfies probability constraints.
+    
+    Args:
+        n_x: Size of outcome space
+        n_s: Size of material space
+    
+    Returns:
+        Random act matrix of shape (n_x, n_s) where each column sums to 1
+    """
+    matrix = np.random.rand(n_x, n_s)
+    # Normalize each column to sum to 1
+    matrix = matrix / matrix.sum(axis=0, keepdims=True)
+    return matrix
+
+def generate_random_acts(n_acts: int, n_x: int, n_s: int) -> List[np.ndarray]:
+    """Generate a list of random act matrices.
+    
+    Args:
+        n_acts: Number of acts to generate
+        n_x: Size of outcome space
+        n_s: Size of material space
+    
+    Returns:
+        List of n_acts random act matrices
+    """
+    return [generate_random_act_matrix(n_x, n_s) for _ in range(n_acts)]
 
 raw_probs = np.random.rand(OMEGA_SPACE_SIZE)
 probs = raw_probs / raw_probs.sum()
@@ -54,12 +82,11 @@ def run_single_trial(n_mental_realization: int, n_material_realization: int,
     
     # Prepare parameters
     gamma_omega = np.array(list(RISK_PROFILES.values()))
-    #gamma_meu = calculate_meu_gamma(gamma_omega, phi_hat)
-    gamma_meu = np.random.uniform(0, 1)
-    
-    # Convert acts to matrix form
-    acts_matrix = [convert_act_to_matrix(act, X_SPACE_SIZE, S_SPACE_SIZE) 
-                  for act in BASIC_AA_ACTS.values()]
+    #gamma_meu = np.random.uniform(0, 1)
+    gamma_meu = calculate_meu_gamma(gamma_omega=gamma_omega, phi_hat=phi_hat)
+
+    # Generate random acts matrices
+    acts_matrix = generate_random_acts(NUM_BASIC_ACTS, X_SPACE_SIZE, S_SPACE_SIZE)
     comparison_acts_matrix = [convert_act_to_matrix(act, X_SPACE_SIZE, S_SPACE_SIZE) 
                             for act in COMPARISON_AA_ACTS.values()]
     
@@ -72,6 +99,7 @@ def run_single_trial(n_mental_realization: int, n_material_realization: int,
                           c_omega_m=c_omega_m, epsilon=epsilon)
     meu_z, meu_obj = solve_meu(phi_hat, psi_hat, gamma_meu, acts_matrix, epsilon=epsilon)
     nr_z, nr_obj = solve_nr(phi_hat, psi_hat, gamma_omega, acts_matrix)
+    
     # Evaluate solutions using true distribution
     dpro_welfare = evaluate_solution(dpro_z, gamma_omega, acts_matrix)
     meu_welfare = evaluate_solution(meu_z, gamma_omega, acts_matrix)
@@ -248,20 +276,9 @@ def plot_results(results: Dict[str, np.ndarray],
     ax.xaxis.grid(False)
     sns.despine(trim=True)
 
-    # # 8) p‐value annotation
-    # p1 = stats.ttest_ind(results['dpro_welfare'], results['meu_welfare']).pvalue
-    # p2 = stats.ttest_ind(results['dpro_welfare'], results['seu_welfare']).pvalue
-    # ax.text(
-    #     0.02, 0.98,
-    #     f"DPRO vs MEU: p={p1:.2e}\nDPRO vs SEU: p={p2:.2e}",
-    #     transform=ax.transAxes, va="top",
-    #     bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8),
-    #     fontsize=12
-    # )
-
     # 9) Save & close
     plt.tight_layout()
-    out = save_path or "method_comparison.png"
+    out = save_path or "method_comparison_v2.png"
     fig.savefig(out, dpi=300, bbox_inches="tight")
     plt.close(fig)
 
@@ -270,12 +287,12 @@ def main():
     # Parameter grids
     n_trials_list = [10, 50, 100]
     n_mental_realization_list = [5, 10, 50]
-    n_material_realization_list = [20]
+    n_material_realization_list = [5, 10, 50]
     epsilon_list = [0.01, 0.1, 1]
     seed = 42
 
     # Create output directory if it doesn't exist
-    output_dir = 'out_of_smaple'
+    output_dir = 'out_of_smaple_v2'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
