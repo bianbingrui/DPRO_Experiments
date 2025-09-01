@@ -106,7 +106,7 @@ where:
 The experiments compare three approaches:
 1. **DPRO**: Distributionally robust optimization
 2. **MEU**: Maximum expected utility
-3. **NR**: Non-robust (baseline)
+3. **SEU**: Subjective expected utility
 
 Results are automatically saved in the `out_of_smaple_plots/` directory with comprehensive visualizations.
 
